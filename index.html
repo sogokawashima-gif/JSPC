@@ -16,7 +16,10 @@ html,body{margin:0;height:100%;background:#000;color:#ddd;overflow:hidden;-webki
 #mon{position:relative;width:min(100vw,calc(100vh * 16 / 9));aspect-ratio:16/9;container-type:inline-size;
   border-radius:3cqw / 5.2cqw;overflow:hidden;background:#000;
   box-shadow:0 0 0 .5cqw #0b0c0c,0 0 0 .75cqw #191b1b,0 1.5cqw 5cqw #000}
-#view{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+#view{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair;transform-origin:0 0;will-change:transform}
+#zoomBtn{left:50%;bottom:3cqw;transform:translateX(-50%);padding:.6cqw 1.6cqw;border-radius:2cqw;background:rgba(0,0,0,.6);box-shadow:0 0 0 .12cqw rgba(255,255,255,.35);font-size:1.6cqw;letter-spacing:.1em;display:none}
+#zoomBtn.show{display:flex}
+@media (pointer:coarse){ #zoomBtn{font-size:2.6cqw;padding:1.2cqw 2.6cqw} }
 #view.nv{filter:grayscale(1) contrast(1.35) brightness(1.18)}
 #grain{position:absolute;inset:-40%;pointer-events:none;opacity:.13;mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
@@ -165,6 +168,7 @@ body.lowfx #scan{animation:none}
       <div class="btn" id="eyeBtn" title="暗視モード (N)"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="17" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".6"/><path d="M22 2v7M22 35v7M2 22h7M35 22h7" stroke="currentColor" stroke-width="1.2" opacity=".7"/><path d="M9 22c4-6 8.5-8.5 13-8.5S31 16 35 22c-4 6-8.5 8.5-13 8.5S13 28 9 22z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="22" cy="22" r="4.2" fill="currentColor"/></svg></div>
       <div id="camlist"></div>
       <div id="mark"></div>
+      <div class="btn" id="zoomBtn" title="ズームを戻す">×1　ズーム解除</div>
       <div id="rep">報告中<div class="bar"><i></i></div></div>
       <div id="toast"></div>
       <div id="pause"><h3>一時停止</h3><button class="rbtn" id="pResume">業務に戻る</button><button class="rbtn" id="pTitle">タイトルへ戻る</button><small>Esc キーでも再開できます</small></div>
@@ -189,7 +193,7 @@ body.lowfx #scan{animation:none}
       ・<b>通常業務</b>では勤務前に <b>3分間の確認時間</b>（異常は発生しない）があり、各カメラの正常な状態を覚えられる。<b>特別手当付き</b>は即業務開始。<br>・勤務は <b>深夜0時〜朝5時</b>（現実の5分）。6台の監視カメラを切り替え、異常を見つけたら<b>その場所をクリック</b>して報告。<br>
       ・未報告の異常が <b>3件</b> 蓄積すると警報。時間内に減らせなければ業務失敗。誤報告が上限に達しても失敗。<br>
       ・勤務ごとに給与（時給 ¥1,500）が支払われる。リザルト画面の見逃しポイントは、所持金を払って開放するまで確認できない。<br>・<b>暗視モード</b>（右下の目のボタン）でしか見えない異常もある。画面全体の異常は画面のどこを押してもよい。<br>
-      ・操作：<span id="ctlText"><kbd>←</kbd><kbd>→</kbd> カメラ切替　<kbd>1</kbd>〜<kbd>6</kbd> 直接切替　<kbd>左クリック</kbd> 異常報告　<kbd>右クリック</kbd>/<kbd>N</kbd> 暗視　<kbd>M</kbd> カメラ一覧　<kbd>Esc</kbd> 一時停止</span>　※音が出ます（ヘッドホン推奨）
+      ・操作：<span id="ctlText"><kbd>←</kbd><kbd>→</kbd> カメラ切替　<kbd>1</kbd>〜<kbd>6</kbd> 直接切替　<kbd>左クリック</kbd> 異常報告　<kbd>右クリック</kbd>/<kbd>N</kbd> 暗視　<kbd>M</kbd> カメラ一覧　<kbd>ホイール</kbd> 拡大　<kbd>Esc</kbd> 一時停止</span>　※音が出ます（ヘッドホン推奨）
     </div>
   </div>
 </div>
@@ -1432,7 +1436,7 @@ function A(def){ ANOM.push(Object.assign({on:false,used:false,w:1,lvl:2,nv:false
     leaves(2.3,.7,3.8,1.0,[36,62,30],260,5); leaves(3.0,.9,5.4,1.2,[30,54,26],260,6); leaves(-1.9,.6,6.3,.8,[32,56,28],180,7);
     // 冷蔵庫
     const fo=S.has('fridge_open'); TRKON('fridge_open');
-    const fr=boxR(-.85,0,4.2,.62,1.45,.6,.3,[176,172,146]);
+    const fr=boxR(-.85,0,4.2,.62,1.45,.6,.3,[142,138,116]);
     if(fr.vis.front){ const Fq=fr.F.front; seed(63); onSurf(Fq,0,0,1,1,62,145,(g,w,h)=>{ const R2=mulberry32(63); for(let i=0;i<30;i++){ g.fillStyle=`rgba(${90+R2()*40|0},${50+R2()*20|0},20,${.2+R2()*.4})`; g.beginPath(); g.ellipse(R2()*w,R2()*h,2+R2()*7,1+R2()*5,0,0,6.28); g.fill(); } g.strokeStyle='rgba(40,40,30,.8)'; g.beginPath(); g.moveTo(2,h*.35); g.lineTo(w-2,h*.35); g.stroke(); g.fillStyle='#555'; g.fillRect(w-8,h*.15,3,14); g.fillRect(w-8,h*.42,3,20); });
       if(fo){ fp(qsub(Fq,.04,.04,.96,.62),[14,14,12],1); const h0=qp(Fq,0,0), h1=qp(Fq,0,.62); const dx=-.5*Math.cos(.3+1.3), dz=-.5*Math.sin(.3+1.3); fp([h0,[h0[0]+dx,0,h0[2]+dz],[h1[0]+dx,h1[1],h1[2]+dz],h1],[170,166,140],1.05); } }
     TRKOFF();
@@ -1470,8 +1474,8 @@ function A(def){ ANOM.push(Object.assign({on:false,used:false,w:1,lvl:2,nv:false
     rod([WX-.75,1.55,WZ-.55],[WX+.75,1.55,WZ-.55],PC,.025); rod([WX-.75,1.55,WZ-.55],[WX-.75,1.55,WZ+.55],PC,.025); rod([WX+.75,1.55,WZ-.55],[WX+.75,1.55,WZ+.55],PC,.025);
     cyl(1.4,0,2.3,.14,.18,[150,80,50],{top:[40,26,18]}); boxR(-.3,0,2.2,.9,.03,.12,.6,[90,72,50]);
   }
-  CAMS.push({id:6,name:'裏庭 井戸',pos:[.25,2.6,.2],yaw:-.06,pitch:-.36,F:580,fish:.68,scene,
-    amb:[30,32,38],lights:[{s:[.5,.72],r:.8,c:[205,198,184]},{s:[.5,.35],r:1.0,c:[42,46,60]},{p:[.45,1.2,3.4],r:.35,c:[60,58,52]}]});
+  CAMS.push({id:6,name:'裏庭 井戸',pos:[.25,2.6,.2],yaw:-.06,pitch:-.36,F:580,fish:.68,scene,nvGain:1.5,
+    amb:[20,21,26],lights:[{s:[.5,.72],r:.72,c:[192,186,172]},{s:[.5,.35],r:1.0,c:[28,31,42]},{p:[.45,1.2,3.4],r:.32,c:[44,42,38]}]});
   const c=5;
   A({id:'well_lid',cam:c,type:'displacement',st:true,lvl:1,label:'井戸の蓋が開いている'});
   A({id:'fridge_open',cam:c,type:'displacement',st:true,lvl:2,label:'冷蔵庫の扉が開いている'});
@@ -1585,6 +1589,7 @@ function compose(g,ci,base,list,nv,t){
   if(CAMS[ci].live){ CAMS[ci].live(g,t); G=g; }
   for(const a of list) if(a.pre&&(!a.nv||nv)){ if(a.flick&&a.flick>0) continue; a.pre(g,t,a); G=g; g.globalAlpha=1; g.filter='none'; }
   g.globalCompositeOperation='multiply'; g.drawImage(lightFor(ci,list,nv),0,0);
+  if(nv && CAMS[ci].nvGain){ g.globalCompositeOperation='lighter'; let k=CAMS[ci].nvGain; while(k>0){ g.globalAlpha=Math.min(1,k); g.drawImage(g.canvas,0,0); k-=1; } g.globalAlpha=1; } // 暗い屋外カメラの暗視を他と同程度に
   g.globalCompositeOperation='source-over';
   if(CAMS[ci].livePost){ CAMS[ci].livePost(g,t); G=g; g.globalCompositeOperation='source-over'; }
   for(const a of list) if(a.post&&(!a.nv||nv)){ a.post(g,t,a); G=g; g.globalAlpha=1; g.globalCompositeOperation='source-over'; }
@@ -1695,7 +1700,7 @@ function startShift(diff){
   S.diff=diff; shuffleSeed();
   ANOM.forEach(a=>{a.on=false;a.used=false;a.rec=null;});
   CAMS.forEach(c=>{c.base=null;});
-  $('pause').classList.remove('show');
+  $('pause').classList.remove('show'); resetZoom();
   Object.assign(S,{paused:false,shownRes:false,t:0,cur:0,nv:false,falseN:0,records:[],rep:null,warnT:0,goT:0,clT:0,P:0,amb:gr(6,12)});
   S.fx={st:.4,fix:0,gl:0,shake:0}; S.scareN=0; S.scareT=(diff==='hazard'?gr(40,100):gr(70,140))*1000;
   S.nextSpawn=DIFF[diff].first*1000;
@@ -1752,7 +1757,7 @@ function report(x,y){
   let hit=null, best=1e12;
   for(const a of list){ if(inBox(a,x,y)){ const b=a.any?[0,0,W,H]:(a.box||a.bb); const ar=(b[2]-b[0])*(b[3]-b[1])+(a.any?1e9:0); if(ar<best){best=ar;hit=a;} } }
   S.rep={t:0,x,y,cam:S.cur,hit};
-  mark.style.left=(x/W*100)+'%'; mark.style.top=(y/H*100)+'%'; mark.style.display='block';
+  { const mr=$('mon').getBoundingClientRect(); mark.style.left=(Z.tx+x/W*mr.width*Z.s)+'px'; mark.style.top=(Z.ty+y/H*mr.height*Z.s)+'px'; } mark.style.display='block';
   rep.style.display='block'; rep.classList.remove('run'); void rep.offsetWidth; rep.classList.add('run');
   SFX.report();
 }
@@ -1766,8 +1771,8 @@ function showToast(msg,cls){ toast.textContent=msg; toast.className=cls; toast.s
 function switchCam(i){ if(S.state!=='PLAYING') return; S.cur=(i+CAMS.length)%CAMS.length; S.fx.st=.28; SFX.sw(); buildCamList(); }
 function toggleNV(){ if(S.state!=='PLAYING') return; S.nv=!S.nv; view.classList.toggle('nv',S.nv); $('eyeBtn').classList.toggle('on',S.nv); S.fx.st=.15; SFX.click(); }
 function buildCamList(){ camlist.innerHTML=CAMS.map((c,i)=>`<div data-i="${i}" class="${i===S.cur?'cur':''}">CAM${c.id}　${c.name}</div>`).join(''); }
-function gameOver(reason){ if(S.state!=='PLAYING') return; document.body.classList.remove('playing'); $('skipBtn').style.display='none'; S.reason=reason; setState('GAMEOVER'); S.goT=0; hud.classList.add('hide'); camlist.classList.remove('open'); mark.style.display='none'; rep.style.display='none'; S.rep=null; SFX.thud(); }
-function clearShift(){ document.body.classList.remove('playing'); setState('CLEAR'); S.clT=0; hud.classList.add('hide'); camlist.classList.remove('open'); mark.style.display='none'; rep.style.display='none'; S.rep=null; SFX.chime(); }
+function gameOver(reason){ if(S.state!=='PLAYING') return; document.body.classList.remove('playing'); $('zoomBtn').classList.remove('show'); $('skipBtn').style.display='none'; S.reason=reason; setState('GAMEOVER'); S.goT=0; hud.classList.add('hide'); camlist.classList.remove('open'); mark.style.display='none'; rep.style.display='none'; S.rep=null; SFX.thud(); }
+function clearShift(){ document.body.classList.remove('playing'); $('zoomBtn').classList.remove('show'); setState('CLEAR'); S.clT=0; hud.classList.add('hide'); camlist.classList.remove('open'); mark.style.display='none'; rep.style.display='none'; S.rep=null; SFX.chime(); }
 
 function update(dt){
   const sec=dt/1000;
@@ -1927,11 +1932,32 @@ function showResult(win){
   $('rRetry').onclick=()=>{ SFX.click(); S.shownRes=false; startShift(S.diff); };
   $('rTitle').onclick=()=>{ SFX.click(); S.shownRes=false; toTitle(); };
 }
-function toTitle(){ document.body.classList.remove('playing'); updWallet(); $('skipBtn').style.display='none'; S.phase='work'; ANOM.forEach(a=>{a.on=false;}); S.night=1; $('result').classList.remove('show'); hud.classList.add('hide'); view.classList.remove('nv'); S.nv=false; S.cur=0; S.fx.st=.4; setState('TITLE'); $('title').classList.add('show'); }
+function toTitle(){ document.body.classList.remove('playing'); resetZoom(); updWallet(); $('skipBtn').style.display='none'; S.phase='work'; ANOM.forEach(a=>{a.on=false;}); S.night=1; $('result').classList.remove('show'); hud.classList.add('hide'); view.classList.remove('nv'); S.nv=false; S.cur=0; S.fx.st=.4; setState('TITLE'); $('title').classList.add('show'); }
 
 /* ---------- 入力 ---------- */
 view.addEventListener('contextmenu',e=>e.preventDefault());
-view.addEventListener('pointerdown',e=>{ if(S.state!=='PLAYING'||S.paused) return; camlist.classList.remove('open'); if(e.button===2){ e.preventDefault(); S.input.push({type:'key',k:'N'}); return; } if(e.button!==0) return; const r=view.getBoundingClientRect(); S.input.push({type:'click',x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}); });
+// ---- 映像のデジタルズーム：2本指でピンチ拡大、拡大中は1本指ドラッグで移動、マウスはホイール ----
+const Z={s:1,tx:0,ty:0}, PT=new Map(); let pinch=null, panS=null;
+function applyZoom(){ const mr=$('mon').getBoundingClientRect(); Z.s=clamp(Z.s,1,4); Z.tx=clamp(Z.tx,mr.width*(1-Z.s),0); Z.ty=clamp(Z.ty,mr.height*(1-Z.s),0);
+  view.style.transform=Z.s>1.001?`translate(${Z.tx}px,${Z.ty}px) scale(${Z.s})`:''; $('zoomBtn').classList.toggle('show',Z.s>1.001&&S.state==='PLAYING'); }
+function resetZoom(){ Z.s=1; Z.tx=0; Z.ty=0; applyZoom(); }
+function zoomAt(cx,cy,ns){ const mr=$('mon').getBoundingClientRect(); const px=cx-mr.left, py=cy-mr.top; ns=clamp(ns,1,4); Z.tx=px-(px-Z.tx)*(ns/Z.s); Z.ty=py-(py-Z.ty)*(ns/Z.s); Z.s=ns; applyZoom(); }
+function reportAt(cx,cy){ const r=view.getBoundingClientRect(); S.input.push({type:'click',x:(cx-r.left)/r.width*W,y:(cy-r.top)/r.height*H}); }
+view.addEventListener('pointerdown',e=>{ if(S.state!=='PLAYING'||S.paused) return; camlist.classList.remove('open');
+  if(e.pointerType==='mouse'){ if(e.button===2){ e.preventDefault(); S.input.push({type:'key',k:'N'}); return; } if(e.button!==0) return; reportAt(e.clientX,e.clientY); return; }
+  try{ view.setPointerCapture(e.pointerId); }catch(_){}
+  PT.set(e.pointerId,{x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,moved:false});
+  if(PT.size===2){ const [a,b]=[...PT.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y),s:Z.s}; PT.forEach(p=>p.moved=true); }
+  else if(PT.size===1){ panS={x:e.clientX,y:e.clientY,tx:Z.tx,ty:Z.ty}; } });
+view.addEventListener('pointermove',e=>{ const p=PT.get(e.pointerId); if(!p) return; p.x=e.clientX; p.y=e.clientY; if(Math.hypot(p.x-p.x0,p.y-p.y0)>10) p.moved=true;
+  if(PT.size>=2&&pinch){ const [a,b]=[...PT.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); zoomAt((a.x+b.x)/2,(a.y+b.y)/2,pinch.s*d/Math.max(1,pinch.d)); }
+  else if(PT.size===1&&panS&&p.moved&&Z.s>1.001){ Z.tx=panS.tx+(e.clientX-panS.x); Z.ty=panS.ty+(e.clientY-panS.y); applyZoom(); } });
+function endPt(e,cancel){ const p=PT.get(e.pointerId); if(!p) return; PT.delete(e.pointerId);
+  if(!cancel&&!p.moved&&!pinch&&PT.size===0&&S.state==='PLAYING'&&!S.paused) reportAt(e.clientX,e.clientY);
+  if(PT.size<2) pinch=null; if(PT.size===0) panS=null; }
+view.addEventListener('pointerup',e=>endPt(e,false)); view.addEventListener('pointercancel',e=>endPt(e,true));
+view.addEventListener('wheel',e=>{ if(S.state!=='PLAYING'||S.paused) return; e.preventDefault(); zoomAt(e.clientX,e.clientY,Z.s*Math.exp(-e.deltaY*.0015)); },{passive:false});
+window.addEventListener('resize',()=>applyZoom());
 window.addEventListener('keydown',e=>{ S.input.push({type:'key',k:e.key}); if(e.key.startsWith('Arrow')) e.preventDefault(); });
 $('prev').onclick=()=>switchCam(S.cur-1); $('next').onclick=()=>switchCam(S.cur+1);
 $('pResume').onclick=()=>{ SFX.click(); setPause(false); }; $('pTitle').onclick=()=>{ quitToTitle(); };
@@ -1940,6 +1966,7 @@ camlist.onclick=e=>{ const i=e.target.dataset.i; if(i!=null){ switchCam(+i); cam
 function goFull(){ if(!IS_TOUCH) return; try{ const el=document.documentElement; const r=el.requestFullscreen?el.requestFullscreen({navigationUI:'hide'}):el.webkitRequestFullscreen?el.webkitRequestFullscreen():null; Promise.resolve(r).then(()=>{ try{ screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{}); }catch(e){} }).catch(()=>{}); }catch(e){} }
 $('bNormal').onclick=()=>{ goFull(); audioInit().then(()=>{ S.night=1; startShift('normal'); }); };
 $('bHazard').onclick=()=>{ goFull(); audioInit().then(()=>{ S.night=1; startShift('hazard'); }); };
+$('zoomBtn').onclick=()=>{ SFX.click(); resetZoom(); };
 $('pauseBtn').onclick=()=>{ SFX.click(); setPause(true); };
 // 縦向き・アプリ切替で自動一時停止
 const isPortrait=()=>IS_TOUCH && window.innerHeight>window.innerWidth;
@@ -1949,7 +1976,7 @@ document.addEventListener('visibilitychange',()=>{ if(document.hidden && S.state
 // 長押しメニュー・ピンチ／ダブルタップのズームを防ぐ
 document.addEventListener('gesturestart',e=>e.preventDefault()); document.addEventListener('dblclick',e=>e.preventDefault());
 if(IS_TOUCH){ document.body.classList.add('lowfx');
-  $('ctlText').innerHTML='<kbd>タップ</kbd> 異常報告　<kbd>◀ ▶</kbd> カメラ切替　<kbd>目のボタン</kbd> 暗視　<kbd>右上</kbd> 一時停止・カメラ一覧　<b>横向き推奨</b>'; }
+  $('ctlText').innerHTML='<kbd>タップ</kbd> 異常報告　<kbd>◀ ▶</kbd> カメラ切替　<kbd>目のボタン</kbd> 暗視　<kbd>ピンチ</kbd> 拡大（拡大中はドラッグで移動）　<kbd>右上</kbd> 一時停止・カメラ一覧　<b>横向き推奨</b>'; }
 
 /* ---------- INIT: アセット生成・ヒットボックス計算 ---------- */
 async function init(){
