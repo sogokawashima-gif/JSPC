@@ -1474,7 +1474,7 @@ function A(def){ ANOM.push(Object.assign({on:false,used:false,w:1,lvl:2,nv:false
     rod([WX-.75,1.55,WZ-.55],[WX+.75,1.55,WZ-.55],PC,.025); rod([WX-.75,1.55,WZ-.55],[WX-.75,1.55,WZ+.55],PC,.025); rod([WX+.75,1.55,WZ-.55],[WX+.75,1.55,WZ+.55],PC,.025);
     cyl(1.4,0,2.3,.14,.18,[150,80,50],{top:[40,26,18]}); boxR(-.3,0,2.2,.9,.03,.12,.6,[90,72,50]);
   }
-  CAMS.push({id:6,name:'裏庭 井戸',pos:[.25,2.6,.2],yaw:-.06,pitch:-.36,F:580,fish:.68,scene,nvGain:1.5,
+  CAMS.push({id:6,name:'裏庭 井戸',pos:[.25,2.6,.2],yaw:-.06,pitch:-.36,F:580,fish:.68,scene,nvGain:1.0,
     amb:[20,21,26],lights:[{s:[.5,.72],r:.72,c:[192,186,172]},{s:[.5,.35],r:1.0,c:[28,31,42]},{p:[.45,1.2,3.4],r:.32,c:[44,42,38]}]});
   const c=5;
   A({id:'well_lid',cam:c,type:'displacement',st:true,lvl:1,label:'井戸の蓋が開いている'});
