@@ -2,11 +2,15 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#000000">
 <title>深夜監視記録</title>
 <style>
 :root{--hud:rgba(236,236,232,.92)}
-html,body{margin:0;height:100%;background:#000;color:#ddd;overflow:hidden;
+html,body{margin:0;height:100%;background:#000;color:#ddd;overflow:hidden;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none;overscroll-behavior:none;
   font-family:"Noto Sans JP","Yu Gothic UI","Yu Gothic","Hiragino Sans","Meiryo",sans-serif;user-select:none;-webkit-user-select:none}
 #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#121313 0%,#030303 75%)}
 #mon{position:relative;width:min(100vw,calc(100vh * 16 / 9));aspect-ratio:16/9;container-type:inline-size;
@@ -66,6 +70,39 @@ html,body{margin:0;height:100%;background:#000;color:#ddd;overflow:hidden;
 #toast.ok{border-color:#6c6}#toast.ng{border-color:#d44;color:#f3c7c7}
 .ov{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:10}
 .ov.show{display:flex}
+@supports (height:100dvh){ #mon{width:min(100vw,calc(100dvh * 16 / 9))} }
+#mon{touch-action:none}
+#pauseBtn{top:2.6cqw;right:8.6cqw;width:4cqw;height:4cqw}
+#pauseBtn svg{width:2cqw;height:2.4cqw}
+@media (pointer:coarse){
+  .arrow{width:8cqw;height:14cqw;margin-top:-7cqw}
+  .arrow svg{width:3cqw;height:5.4cqw}
+  #menuBtn,#pauseBtn{width:6.5cqw;height:6.5cqw;top:1.6cqw}
+  #menuBtn{right:2.6cqw} #pauseBtn{right:10cqw}
+  #menuBtn svg{width:3.4cqw;height:2.9cqw} #pauseBtn svg{width:2.8cqw;height:3.4cqw}
+  #eyeBtn{width:8cqw;height:8cqw;right:2.6cqw;bottom:2.6cqw}
+  #eyeBtn svg{width:6.4cqw;height:6.4cqw}
+  #camlist{top:9cqw;font-size:2.4cqw} #camlist div{padding:1.4cqw 2.4cqw}
+  #skipBtn{font-size:2.2cqw;padding:1.4cqw 3cqw}
+  #pause .rbtn{font-size:2.6cqw;padding:1.6cqw 3cqw;min-width:34cqw}
+  #pause small{display:none}
+}
+body.lowfx #grain{animation:none;opacity:.07}
+body.lowfx #scan{animation:none}
+#rotate{position:fixed;inset:0;z-index:30;background:#000;color:#ddd;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;letter-spacing:.15em;font-size:15px;padding:24px}
+#rotate svg{width:72px;height:72px;animation:rot 1.8s ease-in-out infinite}
+@keyframes rot{0%,20%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
+@media (orientation:portrait) and (pointer:coarse){ body.playing #rotate{display:flex} }
+#title{overflow-y:auto;align-items:safe center}
+@media (max-height:520px){
+  #title .box{padding:10px 16px}
+  #title .org{margin-bottom:4px}
+  #title h1{font-size:clamp(26px,7vh,44px)}
+  #title .prop{margin:10px 0 8px}
+  #title .wallet{margin-bottom:10px}
+  .choice button{padding:10px 18px}
+  .rules{margin-top:12px;padding-top:10px;line-height:1.6}
+}
 #title{background:radial-gradient(ellipse at center,rgba(0,0,0,.35),rgba(0,0,0,.9) 80%)}
 #title .box{text-align:center;max-width:min(92vw,760px);padding:16px}
 #title .org{font-size:clamp(11px,1.4vw,15px);letter-spacing:.5em;color:#999;margin-bottom:10px}
@@ -123,6 +160,7 @@ html,body{margin:0;height:100%;background:#000;color:#ddd;overflow:hidden;
     <div id="hud" class="hide">
       <div class="btn arrow" id="prev" title="前のカメラ (←)"><svg viewBox="0 0 20 36"><path d="M17 2 3 18l14 16" fill="none" stroke="currentColor" stroke-width="2.6"/></svg></div>
       <div class="btn arrow" id="next" title="次のカメラ (→)"><svg viewBox="0 0 20 36"><path d="M3 2l14 16L3 34" fill="none" stroke="currentColor" stroke-width="2.6"/></svg></div>
+      <div class="btn" id="pauseBtn" title="一時停止 (Esc)"><svg viewBox="0 0 20 24"><path d="M3 2h5v20H3zM12 2h5v20h-5z" fill="currentColor"/></svg></div>
       <div class="btn" id="menuBtn" title="カメラ一覧 (M)"><svg viewBox="0 0 26 22"><path d="M0 2h3M7 2h19M0 11h3M7 11h19M0 20h3M7 20h19" stroke="currentColor" stroke-width="2.2"/></svg></div>
       <div class="btn" id="eyeBtn" title="暗視モード (N)"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="17" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".6"/><path d="M22 2v7M22 35v7M2 22h7M35 22h7" stroke="currentColor" stroke-width="1.2" opacity=".7"/><path d="M9 22c4-6 8.5-8.5 13-8.5S31 16 35 22c-4 6-8.5 8.5-13 8.5S13 28 9 22z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="22" cy="22" r="4.2" fill="currentColor"/></svg></div>
       <div id="camlist"></div>
@@ -151,12 +189,13 @@ html,body{margin:0;height:100%;background:#000;color:#ddd;overflow:hidden;
       ・<b>通常業務</b>では勤務前に <b>3分間の確認時間</b>（異常は発生しない）があり、各カメラの正常な状態を覚えられる。<b>特別手当付き</b>は即業務開始。<br>・勤務は <b>深夜0時〜朝5時</b>（現実の5分）。6台の監視カメラを切り替え、異常を見つけたら<b>その場所をクリック</b>して報告。<br>
       ・未報告の異常が <b>3件</b> 蓄積すると警報。時間内に減らせなければ業務失敗。誤報告が上限に達しても失敗。<br>
       ・勤務ごとに給与（時給 ¥1,500）が支払われる。リザルト画面の見逃しポイントは、所持金を払って開放するまで確認できない。<br>・<b>暗視モード</b>（右下の目のボタン）でしか見えない異常もある。画面全体の異常は画面のどこを押してもよい。<br>
-      ・操作：<kbd>←</kbd><kbd>→</kbd> カメラ切替　<kbd>1</kbd>〜<kbd>6</kbd> 直接切替　<kbd>左クリック</kbd> 異常報告　<kbd>右クリック</kbd>/<kbd>N</kbd> 暗視　<kbd>M</kbd> カメラ一覧　<kbd>Esc</kbd> 一時停止　※音が出ます（ヘッドホン推奨）
+      ・操作：<span id="ctlText"><kbd>←</kbd><kbd>→</kbd> カメラ切替　<kbd>1</kbd>〜<kbd>6</kbd> 直接切替　<kbd>左クリック</kbd> 異常報告　<kbd>右クリック</kbd>/<kbd>N</kbd> 暗視　<kbd>M</kbd> カメラ一覧　<kbd>Esc</kbd> 一時停止</span>　※音が出ます（ヘッドホン推奨）
     </div>
   </div>
 </div>
 
 <div id="result" class="ov"><div class="box" id="resBox"></div></div>
+<div id="rotate"><svg viewBox="0 0 64 64"><rect x="18" y="6" width="28" height="52" rx="5" fill="none" stroke="#ddd" stroke-width="3"/><circle cx="32" cy="51" r="2.5" fill="#ddd"/></svg><div>スマホを<b>横向き</b>にしてください<br><span style="font-size:12px;color:#999">業務は一時停止しています</span></div></div>
 <div id="loading">監視システム起動中<div class="lb"><i id="lbar"></i></div></div>
 
 <script>
@@ -167,6 +206,8 @@ html,body{margin:0;height:100%;background:#000;color:#ddd;overflow:hidden;
    音声: Web Audio API プロシージャル合成のみ
    ========================================================================= */
 const W = 1280, H = 720, NEAR = 0.06;
+const IS_TOUCH = (window.matchMedia && matchMedia('(pointer:coarse)').matches) || ('ontouchstart' in window);
+const LOWFX = IS_TOUCH; // スマホでは重い映像効果を間引く
 const SHIFT_MS = 300000;
 const PREP_MS = 180000;               // 通常業務の事前確認時間（異常なし）               // 現実5分 = ゲーム内5時間
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -1550,6 +1591,7 @@ function compose(g,ci,base,list,nv,t){
 }
 function chroma(amt){
   if(amt<.6) return;
+  if(LOWFX && amt<5) return; // スマホでは強い時（異常・演出時）だけ色ずれを描く
   cA.globalCompositeOperation='copy'; cA.drawImage(view,0,0);
   cR.globalCompositeOperation='copy'; cR.drawImage(tmpA,0,0); cR.globalCompositeOperation='multiply'; cR.fillStyle='#f00'; cR.fillRect(0,0,W,H);
   cC.globalCompositeOperation='copy'; cC.drawImage(tmpA,0,0); cC.globalCompositeOperation='multiply'; cC.fillStyle='#0ff'; cC.fillRect(0,0,W,H);
@@ -1558,6 +1600,7 @@ function chroma(amt){
   ctx.globalCompositeOperation='source-over';
 }
 function glitchSlices(n,mag){
+  if(LOWFX) n=Math.ceil(n/2);
   cA.globalCompositeOperation='copy'; cA.drawImage(view,0,0);
   for(let i=0;i<n;i++){ const y=Math.random()*H, h=4+Math.random()*40, dx=(Math.random()-.5)*mag; ctx.drawImage(tmpA,0,y,W,h,dx,y,W,h); }
 }
@@ -1610,7 +1653,7 @@ const SFX={
   knock(){ for(let i=0;i<3;i++) setTimeout(()=>{ tone('sine',95,.35,.002,.18,null,55); noiseHit(.12,.06,'lowpass',500,1); },i*230+Math.random()*60); },
   whisper(){ const c=AU.ctx; if(!c) return; const t=c.currentTime; const s=c.createBufferSource(); s.buffer=AU.noiseBuf; const f=c.createBiquadFilter(); f.type='bandpass'; f.frequency.value=2400; f.Q.value=4; const g=c.createGain(); g.gain.setValueAtTime(0,t); for(let i=0;i<14;i++) g.gain.linearRampToValueAtTime(Math.random()*.09,t+i*.09); g.gain.linearRampToValueAtTime(0,t+1.4); const p=c.createStereoPanner?c.createStereoPanner():null; s.connect(f); f.connect(g); if(p){ p.pan.value=Math.random()*2-1; g.connect(p); p.connect(AU.master);} else g.connect(AU.master); s.start(t); s.stop(t+1.5); },
   thud(){ tone('sine',48,.5,.005,.9,null,30); },
-  shock(){ const c=AU.ctx; if(!c) return; const t=c.currentTime; const g=c.createGain(); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(1,t+.012); g.gain.exponentialRampToValueAtTime(.0001,t+1.3);
+  shock(){ try{ navigator.vibrate&&navigator.vibrate([90,40,160]); }catch(e){} const c=AU.ctx; if(!c) return; const t=c.currentTime; const g=c.createGain(); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(1,t+.012); g.gain.exponentialRampToValueAtTime(.0001,t+1.3);
     const lp=c.createBiquadFilter(); lp.type='lowpass'; lp.frequency.setValueAtTime(7000,t); lp.frequency.exponentialRampToValueAtTime(500,t+1.2); g.connect(lp); lp.connect(AU.master);
     for(const f of [311,330,466,494,698,740]){ const o=c.createOscillator(); o.type='sawtooth'; o.frequency.setValueAtTime(f,t); o.frequency.exponentialRampToValueAtTime(f*.82,t+1.2); o.connect(g); o.start(t); o.stop(t+1.35); }
     noiseHit(.8,.5,'highpass',900,.6); tone('sine',46,1,.005,1.1,null,24); },
@@ -1661,7 +1704,7 @@ function startShift(diff){
   if(S.phase==='work') beginWork();
   $('title').classList.remove('show'); $('result').classList.remove('show');
   hud.classList.remove('hide'); view.classList.remove('nv'); $('eyeBtn').classList.remove('on');
-  buildCamList(); setState('PLAYING'); SFX.sw();
+  buildCamList(); setState('PLAYING'); SFX.sw(); document.body.classList.add('playing'); setTimeout(checkOrient,50);
 }
 function beginWork(){
   S.phase='work'; S.prepT=0; $('skipBtn').style.display='none';
@@ -1723,8 +1766,8 @@ function showToast(msg,cls){ toast.textContent=msg; toast.className=cls; toast.s
 function switchCam(i){ if(S.state!=='PLAYING') return; S.cur=(i+CAMS.length)%CAMS.length; S.fx.st=.28; SFX.sw(); buildCamList(); }
 function toggleNV(){ if(S.state!=='PLAYING') return; S.nv=!S.nv; view.classList.toggle('nv',S.nv); $('eyeBtn').classList.toggle('on',S.nv); S.fx.st=.15; SFX.click(); }
 function buildCamList(){ camlist.innerHTML=CAMS.map((c,i)=>`<div data-i="${i}" class="${i===S.cur?'cur':''}">CAM${c.id}　${c.name}</div>`).join(''); }
-function gameOver(reason){ if(S.state!=='PLAYING') return; $('skipBtn').style.display='none'; S.reason=reason; setState('GAMEOVER'); S.goT=0; hud.classList.add('hide'); camlist.classList.remove('open'); mark.style.display='none'; rep.style.display='none'; S.rep=null; SFX.thud(); }
-function clearShift(){ setState('CLEAR'); S.clT=0; hud.classList.add('hide'); camlist.classList.remove('open'); mark.style.display='none'; rep.style.display='none'; S.rep=null; SFX.chime(); }
+function gameOver(reason){ if(S.state!=='PLAYING') return; document.body.classList.remove('playing'); $('skipBtn').style.display='none'; S.reason=reason; setState('GAMEOVER'); S.goT=0; hud.classList.add('hide'); camlist.classList.remove('open'); mark.style.display='none'; rep.style.display='none'; S.rep=null; SFX.thud(); }
+function clearShift(){ document.body.classList.remove('playing'); setState('CLEAR'); S.clT=0; hud.classList.add('hide'); camlist.classList.remove('open'); mark.style.display='none'; rep.style.display='none'; S.rep=null; SFX.chime(); }
 
 function update(dt){
   const sec=dt/1000;
@@ -1884,7 +1927,7 @@ function showResult(win){
   $('rRetry').onclick=()=>{ SFX.click(); S.shownRes=false; startShift(S.diff); };
   $('rTitle').onclick=()=>{ SFX.click(); S.shownRes=false; toTitle(); };
 }
-function toTitle(){ updWallet(); $('skipBtn').style.display='none'; S.phase='work'; ANOM.forEach(a=>{a.on=false;}); S.night=1; $('result').classList.remove('show'); hud.classList.add('hide'); view.classList.remove('nv'); S.nv=false; S.cur=0; S.fx.st=.4; setState('TITLE'); $('title').classList.add('show'); }
+function toTitle(){ document.body.classList.remove('playing'); updWallet(); $('skipBtn').style.display='none'; S.phase='work'; ANOM.forEach(a=>{a.on=false;}); S.night=1; $('result').classList.remove('show'); hud.classList.add('hide'); view.classList.remove('nv'); S.nv=false; S.cur=0; S.fx.st=.4; setState('TITLE'); $('title').classList.add('show'); }
 
 /* ---------- 入力 ---------- */
 view.addEventListener('contextmenu',e=>e.preventDefault());
@@ -1894,8 +1937,19 @@ $('prev').onclick=()=>switchCam(S.cur-1); $('next').onclick=()=>switchCam(S.cur+
 $('pResume').onclick=()=>{ SFX.click(); setPause(false); }; $('pTitle').onclick=()=>{ quitToTitle(); };
 $('eyeBtn').onclick=toggleNV; $('skipBtn').onclick=()=>{ if(S.state==='PLAYING'&&S.phase==='prep') beginWork(); }; $('menuBtn').onclick=()=>{ camlist.classList.toggle('open'); SFX.click(); };
 camlist.onclick=e=>{ const i=e.target.dataset.i; if(i!=null){ switchCam(+i); camlist.classList.remove('open'); } };
-$('bNormal').onclick=()=>{ audioInit().then(()=>{ S.night=1; startShift('normal'); }); };
-$('bHazard').onclick=()=>{ audioInit().then(()=>{ S.night=1; startShift('hazard'); }); };
+function goFull(){ if(!IS_TOUCH) return; try{ const el=document.documentElement; const r=el.requestFullscreen?el.requestFullscreen({navigationUI:'hide'}):el.webkitRequestFullscreen?el.webkitRequestFullscreen():null; Promise.resolve(r).then(()=>{ try{ screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{}); }catch(e){} }).catch(()=>{}); }catch(e){} }
+$('bNormal').onclick=()=>{ goFull(); audioInit().then(()=>{ S.night=1; startShift('normal'); }); };
+$('bHazard').onclick=()=>{ goFull(); audioInit().then(()=>{ S.night=1; startShift('hazard'); }); };
+$('pauseBtn').onclick=()=>{ SFX.click(); setPause(true); };
+// 縦向き・アプリ切替で自動一時停止
+const isPortrait=()=>IS_TOUCH && window.innerHeight>window.innerWidth;
+function checkOrient(){ if(S.state==='PLAYING' && isPortrait() && !S.paused) setPause(true); }
+window.addEventListener('resize',checkOrient); window.addEventListener('orientationchange',()=>setTimeout(checkOrient,200));
+document.addEventListener('visibilitychange',()=>{ if(document.hidden && S.state==='PLAYING' && !S.paused) setPause(true); });
+// 長押しメニュー・ピンチ／ダブルタップのズームを防ぐ
+document.addEventListener('gesturestart',e=>e.preventDefault()); document.addEventListener('dblclick',e=>e.preventDefault());
+if(IS_TOUCH){ document.body.classList.add('lowfx');
+  $('ctlText').innerHTML='<kbd>タップ</kbd> 異常報告　<kbd>◀ ▶</kbd> カメラ切替　<kbd>目のボタン</kbd> 暗視　<kbd>右上</kbd> 一時停止・カメラ一覧　<b>横向き推奨</b>'; }
 
 /* ---------- INIT: アセット生成・ヒットボックス計算 ---------- */
 async function init(){
