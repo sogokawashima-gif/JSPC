@@ -1504,9 +1504,11 @@ let TRK_ENABLED=false;
 CAMS.forEach((cm,i)=>{
   A({id:'sys_nosig'+i,cam:i,type:'system',lvl:1,any:true,w:.4,sys:'nosig',label:'映像信号の途絶 (NO SIGNAL)'});
   A({id:'sys_flip'+i,cam:i,type:'system',lvl:1,any:true,w:.35,sys:'flip',label:'映像が上下反転している'});
-  A({id:'sys_time'+i,cam:i,type:'system',lvl:3,w:.35,hud:'time',box:[40,26,520,76],label:'タイムスタンプが1999年を表示'});
-  A({id:'sys_name'+i,cam:i,type:'system',lvl:3,w:.3,hud:'name',box:[40,70,360,112],label:'カメラ名が文字化けしている'});
 });
+
+/* ---- 全カメラ共通のシステム異常（画面左上の表示） ---- */
+A({id:'sys_time',cam:-1,global:true,type:'system',lvl:3,w:.9,hud:'time',box:[40,26,520,76],label:'タイムスタンプが1999年を表示（全カメラ）'});
+A({id:'sys_name',cam:-1,global:true,type:'system',lvl:3,w:.8,hud:'name',box:[40,70,360,112],label:'カメラ名が文字化けしている（全カメラ）'});
 
 /* ---- 心臓が止まるような動的異常（たまに・監視中のカメラで発生） ---- */
 const evp=a=>a.evT==null?1:clamp(a.evT/a.dur,0,1);
@@ -1692,7 +1694,7 @@ const $=id=>document.getElementById(id);
 const hud=$('hud'), camlist=$('camlist'), mark=$('mark'), rep=$('rep'), toast=$('toast');
 function setState(s){ S.state=s; }
 function shuffleSeed(){ const s=(Math.random()*1e9)|0; GR=mulberry32(s); S.seed=s; }
-function activeList(ci){ return ANOM.filter(a=>a.on&&a.cam===ci); }
+function activeList(ci){ return ANOM.filter(a=>a.on&&(a.cam===ci||a.global)); }
 function activeCount(){ let n=0; for(const a of ANOM) if(a.on) n++; return n; }
 function gameSec(){ return S.t/1000*60; }
 
@@ -1732,7 +1734,7 @@ function spawn(){
 }
 function activate(a){
   a.on=true; a.used=true; a.flick=0; a.evT=a.scare?0:null;
-  a.rec={a,g:gameSec(),found:false}; S.records.push(a.rec);
+  a.rec={a,g:gameSec(),found:false,ci:S.cur}; S.records.push(a.rec);
   Net.send({ev:'spawn',id:a.id,t:S.t});
 }
 function trySpawnScare(){ // 監視中のカメラで発生させる
@@ -1879,14 +1881,14 @@ function lockedThumb(cv){ const c=cv.getContext('2d'); c.fillStyle='#0b0b0b'; c.
 
 /* ---------- リザルト（見逃しポイントは開放制） ---------- */
 function thumb(rec,canvas){
-  const a=rec.a, ci=a.cam; const set=new Set(a.st?[a.id]:[]);
+  const a=rec.a, ci=a.global?(rec.ci??0):a.cam; const set=new Set(a.st?[a.id]:[]);
   const base=buildBase(ci,set); const tmp=mkCanvas(); const g=tmp.getContext('2d');
   const list=[a]; const saveOn=a.on, saveEv=a.evT; a.on=true; a.evT=null;
   if(a.sys==='nosig'){ g.fillStyle='#10141a'; g.fillRect(0,0,W,H); g.font='600 90px monospace'; g.fillStyle='#ddd'; g.textAlign='center'; g.fillText('NO SIGNAL',W/2,H/2+30); }
   else { compose(g,ci,base,list,a.nv,3); if(a.st){} if(a.sys==='flip'){ const t2=mkCanvas(); t2.getContext('2d').drawImage(tmp,0,0); g.save(); g.translate(W,H); g.rotate(Math.PI); g.drawImage(t2,0,0); g.restore(); } }
   a.on=saveOn; a.evT=saveEv;
   const c=canvas.getContext('2d'); c.filter=a.nv?'grayscale(1) contrast(1.35) brightness(1.2)':'none'; c.drawImage(tmp,0,0,canvas.width,canvas.height); c.filter='none';
-  const sx=canvas.width/W, sy=canvas.height/H; c.font='600 13px sans-serif'; c.fillStyle='#fff'; c.fillText(`CAM${CAMS[ci].id} ${CAMS[ci].name}`,8,18);
+  const sx=canvas.width/W, sy=canvas.height/H; c.font='600 13px sans-serif'; c.fillStyle='#fff'; c.fillText(a.global?'全カメラ共通':`CAM${CAMS[ci].id} ${CAMS[ci].name}`,8,18);
   if(a.hud==='time'){ c.fillText('1999/08/13 04:44:44',8,34); }
   const b=a.any?[6,6,W-6,H-6]:(a.box||a.bb);
   if(b){ c.strokeStyle=rec.found?'#6d6':'#ff3b30'; c.lineWidth=2.5; c.strokeRect(b[0]*sx,b[1]*sy,(b[2]-b[0])*sx,(b[3]-b[1])*sy); }
@@ -1915,7 +1917,7 @@ function showResult(win){
   recs.sort((a,b)=>(a.found-b.found)||(a.g-b.g));
   const open=rec=>rec.found||rec.unlocked;
   const cardHTML=rec=>open(rec)
-    ? `<span class="st ${rec.found?'f':'m'}">${rec.found?'報告済':'見逃し'}</span>${rec.a.label}<br><span class="meta">CAM${CAMS[rec.a.cam].id} ${CAMS[rec.a.cam].name}　発生 ${fmtG(rec.g)}${rec.a.nv?'　※暗視でのみ可視':''}</span>`
+    ? `<span class="st ${rec.found?'f':'m'}">${rec.found?'報告済':'見逃し'}</span>${rec.a.label}<br><span class="meta">${rec.a.global?'全カメラ共通':`CAM${CAMS[rec.a.cam].id} ${CAMS[rec.a.cam].name}`}　発生 ${fmtG(rec.g)}${rec.a.nv?'　※暗視でのみ可視':''}</span>`
     : `<span class="st m">見逃し</span>？？？？？<br><span class="meta">発生 ${fmtG(rec.g)}　（場所・内容は未開放）</span><button class="ul">見逃しポイントを開放する　${yen(UNLOCK[rec.a.lvl])}</button>`;
   const refresh=()=>{ updWallet(); const L=recs.filter(r=>!open(r)); const tot=L.reduce((n,r)=>n+UNLOCK[r.a.lvl],0);
     const all=$('ulAll'); if(all){ all.style.display=L.length?'':'none'; all.textContent=`すべて開放する　${yen(tot)}`; all.disabled=WALLET<tot; }
